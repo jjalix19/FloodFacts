@@ -7,29 +7,79 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         });
     });
 });
- 
+
+// Login/Logout Logic
+function checkLoginStatus() {
+    const loggedIn = localStorage.getItem('loggedIn');
+    const username = localStorage.getItem('username');
+    const loginLink = document.getElementById('login-link');
+    const welcomeMessage = document.getElementById('welcome-message');
+
+    if (loggedIn && username) {
+        if (loginLink) loginLink.textContent = 'Logout';
+        if (welcomeMessage) {
+            welcomeMessage.style.display = 'block';
+            welcomeMessage.innerHTML = `<p class="text-success">Welcome back, ${username}!</p>`;
+        }
+    } else {
+        if (loginLink) loginLink.textContent = 'Login';
+        if (welcomeMessage) welcomeMessage.style.display = 'none';
+    }
+}
+
+if (document.getElementById('login-link')) {
+    document.getElementById('login-link').addEventListener('click', function(e) {
+        if (localStorage.getItem('loggedIn')) {
+            // Logout
+            localStorage.removeItem('loggedIn');
+            localStorage.removeItem('username');
+            location.reload(); // Refresh to update navbar
+        } else {
+            // Go to login page (default behavior)
+        }
+    });
+}
+
+if (document.getElementById('login-form')) {
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        if (username && password) {
+            localStorage.setItem('loggedIn', 'true');
+            localStorage.setItem('username', username);
+            window.location.href = 'index.html'; // Redirect to home
+        } else {
+            alert('Please enter both username and password.');
+        }
+    });
+}
+
+// Call on page load
+checkLoginStatus();
+
 // Weather API Integration
 const apiKey = 'YOUR_API_KEY'; // Replace with your OpenWeatherMap API key
 const city = 'New York'; // Default city; can be made dynamic
 const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
- 
+
 fetch(weatherUrl)
     .then(response => response.json())
     .then(data => {
         const temp = data.main.temp;
         const humidity = data.main.humidity;
         document.getElementById('weather').innerHTML = `
-<div class="card-body">
-<h5>${city}</h5>
-<p>Temperature: ${temp}°C</p>
-<p>Humidity: ${humidity}%</p>
-</div>
+            <div class="card-body">
+                <h5>${city}</h5>
+                <p>Temperature: ${temp}°C</p>
+                <p>Humidity: ${humidity}%</p>
+            </div>
         `;
     })
     .catch(error => {
         document.getElementById('weather').innerHTML = '<div class="card-body"><p>Error loading weather data.</p></div>';
     });
- 
+
 // Quiz Logic
 const questions = [
     {
@@ -58,10 +108,10 @@ const questions = [
         answer: 1
     }
 ];
- 
+
 let currentQuestion = 0;
 let score = 0;
- 
+
 function loadQuestion() {
     const q = questions[currentQuestion];
     document.getElementById('question').innerHTML = `<h4>${q.question}</h4>`;
@@ -69,7 +119,7 @@ function loadQuestion() {
         `<button class="btn btn-outline-primary m-1" onclick="checkAnswer(${i})">${opt}</button>`
     ).join('');
 }
- 
+
 function checkAnswer(selected) {
     if (selected === questions[currentQuestion].answer) score++;
     currentQuestion++;
@@ -79,7 +129,7 @@ function checkAnswer(selected) {
         showResult();
     }
 }
- 
+
 function showResult() {
     document.getElementById('quiz-container').style.display = 'none';
     document.getElementById('result').style.display = 'block';
@@ -88,5 +138,5 @@ function showResult() {
     document.getElementById('feedback').textContent = feedback;
     localStorage.setItem('floodQuizScore', score); // Store score
 }
- 
+
 loadQuestion(); // Start quiz
